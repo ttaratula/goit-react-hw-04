@@ -1,35 +1,55 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import "./App.css";
+import SearchBar from "./components/SearchBar";
+import { Toaster } from "react-hot-toast";
+import ImageGallery from "./components/ImageGallery";
+import Loader from "./components/Loader";
+import ErrorMessage from "./components/ErrorMessage";
+import LoadMoreBtn from "./components/LoadMoreBtn";
+const [selectedImage, setSelectedImage] = useState(null);
 
-function App() {
-  const [count, setCount] = useState(0)
+
+export default function App() {
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const handleSearch = async (query) => {
+    try {
+      const response = await fetch(
+        `https://api.unsplash.com/search/photos?query=${query}&client_id=oTG1UQTDb3rhIQFAjY8e3g1kFp-1USRYBVYRFwF2yyM`
+      );
+
+      const data = await response.json();
+      setImages(data.results);
+    } catch (error) {
+      console.error("Error fetching images:", error);
+    }
+  };
+
+  const handleImageClick = (imageData) => {
+    setSelectedImage(imageData);
+  };
+
+  {selectedImage && (
+    <ImageModal
+      isOpen={!!selectedImage}
+      onClose={() => setSelectedImage(null)}
+      image={selectedImage}
+    />
+  )}
+  
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+      <Toaster position="top-center" reverseOrder={false} />
+      <SearchBar onSubmit={handleSearch} />
+      <ImageGallery images={images} />
+      {loading && <Loader />}
+      {error && <ErrorMessage message={error} />}
 
-export default App
+      {!loading && images.length > 0 && !error && (
+        <LoadMoreBtn onClick={loadMore} />
+      )}
+    </>
+  );
+}

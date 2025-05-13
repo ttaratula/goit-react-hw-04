@@ -40,3 +40,24 @@
 .read-the-docs {
   color: #888;
 }
+
+.modal-overlay {
+  background-color: rgba(0, 0, 0, 0.8);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  padding: 0;
+  border-radius: 10px;
+  max-width: 90%;
+  max-height: 90%;
+}
