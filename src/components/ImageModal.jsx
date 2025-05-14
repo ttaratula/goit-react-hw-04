@@ -1,6 +1,7 @@
-// src/components/ImageModal.jsx
+// src/components/ImageModal/ImageModal.jsx
 import ReactModal from 'react-modal';
 import { useEffect } from 'react';
+import styles from './ImageModal.module.css'; // Якщо є стилі
 
 // Встановлення root-елемента для доступності
 ReactModal.setAppElement('#root');
@@ -21,10 +22,20 @@ export default function ImageModal({ isOpen, onClose, image }) {
       isOpen={isOpen}
       onRequestClose={onClose}
       contentLabel="Image Modal"
-      overlayClassName="modal-overlay"
-      className="modal-content"
+      overlayClassName={styles.overlay}
+      className={styles.content}
     >
-      <img src={image?.largeUrl} alt={image?.alt} style={{ maxWidth: '100%' }} />
+      {/* ВСТАВЛЯЄМО СЮДИ велике зображення */}
+      <img
+        src={image?.urls?.regular}
+        alt={image?.alt_description || 'Large image'}
+        style={{ maxWidth: '100%', height: 'auto', borderRadius: '10px' }}
+      />
+
+      {/* Додатково можна вивести автора, лайки і т.д. */}
+      <p>Author: {image?.user?.name}</p>
+      <p>Likes: {image?.likes}</p>
+      <p>Description: {image?.description || 'No description'}</p>
     </ReactModal>
   );
 }
