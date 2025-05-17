@@ -1,8 +1,9 @@
-export default function ErrorMessage({ message }) {
-    return (
-      <div style={{ color: 'red', textAlign: 'center', marginTop: '20px' }}>
-        {message || 'Oops! Something went wrong. Please try again later.'}
-      </div>
-    );
-  }
-  
+  import css from "./ErrorMessage.module.css";
+
+export function ErrorMessage({ message }) {
+  return (
+    <div className={css.wrapper}>
+      <p className={css.text}>{message}</p>
+    </div>
+  );
+}

@@ -1,19 +1,20 @@
-import ImageCard from './';
-import styles from './ImageGallery.module.css';
+import { ImageCard } from "./ImageCard";
+import css from "./ImageGallery.module.css";
 
-
-export default function ImageGallery({ images }) {
-	if (!images || images.length === 0) {
-	  return null; // Не рендеримо нічого, якщо масив порожній
-	}
-  
-	return (
-	  <ul >
-		{images.map((image) => (
-		  <li key={image.id} style={styles.item}>
-			<ImageCard image={image} onClick={() => onImageClick(image)}/>
-		  </li>
-		))}
-	  </ul>
-	);
-  }
+export function ImageGallery({ images, onClickImage }) {
+  return (
+    <ul className={css.imageList}>
+      {images.map((image) => {
+        return (
+          <li
+            key={image.id}
+            className={css.imageItem}
+            onClick={() => onClickImage(image)}
+          >
+            <ImageCard image={image} />
+          </li>
+        );
+      })}
+    </ul>
+  );
+}

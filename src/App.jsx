@@ -1,61 +1,119 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
 import "./App.css";
 import SearchBar from "./components/SearchBar";
-import { Toaster } from "react-hot-toast";
-import ImageGallery from "./components/ImageGallery";
-import Loader from "./components/Loader";
-import ErrorMessage from "./components/ErrorMessage";
-import LoadMoreBtn from "./components/LoadMoreBtn";
-import ImageModal from "./components/ImageModal";
+import { fetchImages, fetchRandomImages } from "../src/api/search-api.js";
+import { ImageGallery } from "./components/ImageGallery";
+import { PropagateLoader } from "react-spinners";
+import { ErrorMessage } from "./components/ErrorMessage";
+import { ImageModal } from "./components/ImageModal.jsx";
+import { LoadMoreBtn } from "./components/LoadMoreBtn";
+
+import Modal from "react-modal";
+
+Modal.setAppElement("#root");
 
 export default function App() {
+  const [query, setQuery] = useState("");
   const [images, setImages] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalData, setModalData] = useState({});
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
 
-  const handleSearch = async (query) => {
-    try {
-      setError(null);
-      setLoading(true);
-
-      const response = await fetch(
-        `https://api.unsplash.com/search/photos?query=${query}&client_id=oTG1UQTDb3rhIQFAjY8e3g1kFp-1USRYBVYRFwF2yyM`
-      );
-      const data = await response.json();
-      setImages(data.results);
-    } catch (err) {
-      setError("Failed to fetch images");
-    } finally {
-      setLoading(false);
+  const onSubmit = (q) => {
+    if (q === query) {
+      return;
     }
+    async function getImages(q) {
+      try {
+        setPage(1);
+        setIsError(false);
+        setIsLoading(true);
+        setQuery(q);
+        setImages([]);
+        const res = await fetchImages(q, 1);
+        setTotalPages(res.total_pages);
+        setImages(res.results);
+      } catch (error) {
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    getImages(q);
   };
 
-  const handleImageClick = (imageData) => {
-    setSelectedImage(imageData);
+  const openModalImage = (image) => {
+    document.body.style.overflow = "hidden";
+    setIsModalOpen(true);
+    setModalData(image);
   };
 
-  const loadMore = () => {
-    console.log("Load more clicked (pagination not implemented yet)");
+  const closeModalImage = () => {
+    document.body.style.overflow = "visible";
+    setIsModalOpen(false);
+    setModalData({});
   };
+
+  useEffect(() => {
+    async function getRandomImages() {
+      try {
+        setImages([]);
+        setIsError(false);
+        setIsLoading(true);
+        const res = await fetchRandomImages();
+        setImages(res);
+      } catch (error) {
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    getRandomImages();
+  }, []);
+
+  const handleLoadMore = () => {
+    setPage(page + 1);
+    async function getImages() {
+      try {
+        setIsError(false);
+        setIsLoading(true);
+        const res = await fetchImages(query, page + 1);
+        setImages((prevImgs) => [...prevImgs, ...res.results]);
+      } catch (error) {
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    getImages();
+  };
+
+  const isLastPage = page === totalPages;
 
   return (
     <>
-      <Toaster position="top-center" reverseOrder={false} />
-      <SearchBar onSubmit={handleSearch} />
-      <ImageGallery images={images} onImageClick={handleImageClick} />
-      {loading && <Loader />}
-      {error && <ErrorMessage message={error} />}
-      {!loading && images.length > 0 && !error && (
-        <LoadMoreBtn onClick={loadMore} />
+      <SearchBar onSubmit={onSubmit} />
+      {!isError ? (
+        images.length > 0 && (
+          <ImageGallery images={images} onClickImage={openModalImage} />
+        )
+      ) : (
+        <ErrorMessage message={"Something went wrong..."} />
       )}
-      {selectedImage && (
+      {!isLastPage && query !== "" && <LoadMoreBtn onClick={handleLoadMore} />}
+      {isLoading && <PropagateLoader color="#9a9a9a" loading size={25} />}
+      {isModalOpen && (
         <ImageModal
-          isOpen={!!selectedImage}
-          onClose={() => setSelectedImage(null)}
-          image={selectedImage}
+          image={modalData}
+          isClose={closeModalImage}
+          isOpen={isModalOpen}
         />
       )}
     </>
   );
 }
+

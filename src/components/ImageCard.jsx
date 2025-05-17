@@ -1,11 +1,9 @@
-export default function ImageCard({ image, onClick }) {
+import css from "./ImageCard.module.css";
+
+export function ImageCard({ image }) {
   return (
-    <div onClick={onClick} style={{ cursor: 'pointer' }}>
-      <img
-        src={image.urls.small}
-        alt={image.alt_description || 'Image'}
-        style={styles.image}
-      />
-    </div>
+    <>
+      <img src={image.urls.small} alt={image.alt_description} className={css.imageCard}/>
+    </>
   );
 }
